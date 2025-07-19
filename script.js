@@ -93,7 +93,16 @@ setInterval(changeFloatingImages, 1000);
 // Function to toggle play/pause
 function toggleAudio() {
     if (audio.paused) {
-        audio.play();
+        // For Android devices, we need to unlock audio context first
+        if (/Android/.test(navigator.userAgent)) {
+            audio.play().catch(error => {
+                console.log('Audio playback failed:', error);
+                // Try again after a short delay
+                setTimeout(() => audio.play(), 100);
+            });
+        } else {
+            audio.play();
+        }
         // Change to pause icon
         playPauseBtn.querySelector('svg').innerHTML = '<path d="M10 9v6M14 9v6"/>';
         // Start floating elements animation
@@ -104,7 +113,7 @@ function toggleAudio() {
         audio.pause();
         // Change to play icon
         playPauseBtn.querySelector('svg').innerHTML = '<polygon points="5 3 19 12 5 21 5 3"/>';
-        // Stop floating elements animation
+        // Pause floating elements animation
         floatingElements.forEach(element => {
             element.style.animationPlayState = 'paused';
         });
